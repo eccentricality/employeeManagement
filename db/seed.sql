@@ -20,8 +20,8 @@ VALUES
 
 INSERT INTO employee (first_name, last_name, role_id, mgr_id)
 VALUES
-    ('Master', 'Yoda', 1, NULL),
+    ('Master', 'Yoda', 1, 1),
     ('Obi-Wan', 'Kenobi', 4, 3),
-    ('Anakin', 'Skywalker', 5, NULL),
-    ('Ahsoka', 'Tano', 7, NULL),
-    ('Mace', 'Windu', 6, 5)
+    ('Anakin', 'Skywalker', 5, 5),
+    ('Ahsoka', 'Tano', 7, 7),
+    ('Mace', 'Windu', 6, 5);

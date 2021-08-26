@@ -3,8 +3,8 @@ const inquirer = require('inquirer');
 
 const connection = mysql.createConnection({
     host: 'localhost',
-    user: 'root',
     port: 3006,
+    user: 'root',
     password: '',
     database: 'employee_db',
 });
@@ -29,33 +29,31 @@ const employee = () => {
         }
     ])
     .then((res) => {
-        console.log(res.choice);
+        switch (res.choice) {
+            case "View Employees": employeeView();
+            break;
+
+            case "View ALL Employees by DEPT": deptView();
+            break;
+
+            case  "View ALL Employees by MANAGER": managerView();
+            break;
+
+            case "ADD Employee": addEmployee();
+            break;
+
+            case "REMOVE Employee": removeEmployee();
+            break;
+
+            case "UPDATE Employee ROLE": updateEmployee();
+            break;
+
+            case "UPDATE Employee MANAGER": updateManager();
+            break;
+
+            case "EXIT": process.exit();
+        }
     });
-    switch (res.choice) {
-        case "View Employees": employeeView();
-        break;
-
-        case "View ALL Employees by DEPT": deptView();
-        break;
-
-        case  "View ALL Employees by MANAGER": managerView();
-        break;
-
-        case "ADD Employee": addEmployee();
-        break;
-
-        case "REMOVE Employee": removeEmployee();
-        break;
-
-        case "UPDATE Employee ROLE": updateEmployee();
-        break;
-
-        case "UPDATE Employee MANAGER": updateManager();
-        break;
-
-        case "EXIT": process.exit();
-        break;
-    }
 };
 
 const employeeView = (inputs = []) => {
@@ -69,7 +67,7 @@ const employeeView = (inputs = []) => {
         connection.query(query, { last_name: choice.employeeView}, (err, res) => {
             if (err) throw err;
 
-            for (let i = 0; i < res.lenght; i++) {
+            for (let i = 0; i < res.length; i++) {
                 console.log(
                     " First Name: " + res[i].first_name +
                     " Last Name: " + res[i].last_name +
@@ -95,7 +93,7 @@ const managerView = (res) => {
     connection.query(query, (err, res) => {
         if (err) throw err;
 
-        for (let i = 0; i < res.lenght; i++) {
+        for (let i = 0; i < res.length; i++) {
             console.log(
                 res[i].first_name + " " +
                 res[i].last_name + " ID: " +
@@ -190,4 +188,6 @@ const updateManager = () => {
 
 connection.connect((err) => {
     if (err) throw err;
+    console.log(`connected as id ${connection.threadId}`);
+    employee();
 });
