@@ -18,10 +18,10 @@ VALUES
     ('Acct Manager', 150000, 3),
     ('Payroll', 100000, 3);
 
-INSERT INTO employee (first_name, last_name, role_id, mgr_id)
+INSERT INTO employee (first_name, last_name, mgr_id)
 VALUES
-    ('Master', 'Yoda', 1, 1),
-    ('Obi-Wan', 'Kenobi', 4, 3),
-    ('Anakin', 'Skywalker', 5, 5),
-    ('Ahsoka', 'Tano', 7, 7),
-    ('Mace', 'Windu', 6, 5);
+    ('Anakin', 'Skywalker', NULL),
+    ('Ahsoka', 'Tano', NULL),
+    ('Mace', 'Windu', 3),
+    ('Master', 'Yoda', 1),
+    ('Obi-Wan', 'Kenobi', 5);
