@@ -23,7 +23,7 @@ const employee = () => {
             name: "options",
             message: "Your options:",
             choices: [
-                "VIEW ALL Employees",
+                "View Employees",
                 "View ALL Employees by DEPT",
                 "View ALL Employees by MANAGER",
                 "ADD Employee",
@@ -38,4 +38,53 @@ const employee = () => {
     .then((res) => {
         console.log(res.choice);
     });
+    switch (res.choice) {
+        case "View Employees": employeeView();
+        break;
+
+        case "View ALL Employees by DEPT": deptView();
+        break;
+
+        case  "View ALL Employees by MANAGER": managerView();
+        break;
+
+        case "ADD Employee": addEmployee();
+        break;
+
+        case "REMOVE Employee": removeEmployee();
+        break;
+
+        case "UPDATE Employee ROLE": updateEmployee();
+        break;
+
+        case "UPDATE Employee MANAGER": updateManager();
+        break;
+
+        case "EXIT": connection.end();
+        break;
+    }
 };
+
+const employeeView = (inputs = []) => {
+    inquirer.prompt({
+        name: "employeeView",
+        type: "input",
+        message: "Enter Last Name to begin"
+    })
+    .then((choice) => {
+        let query = "SELECT first_name, last_name, id FROM employee WHERE ?";
+        connection.query(query, { last_name: choice.employeeView}, (err, res) => {
+            if (err) throw err;
+
+            for (let i = 0; i < res.lenght; i++) {
+                console.log(
+                    " First Name: " + res[i].first_name +
+                    " Last Name: " + res[i].last_name +
+                    " ID: " + res[i].id
+                );
+            };
+        });
+        employee();
+    });
+}
+
