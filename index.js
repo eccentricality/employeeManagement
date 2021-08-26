@@ -1,19 +1,12 @@
-// dependencies
-const fs = require('fs');
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 
 const connection = mysql.createConnection({
-    host: "localhost",
+    host: 'localhost',
+    user: 'root',
     port: 3006,
-    user: "root",
-    password: "",
-    database: "employee_db"
-});
-
-connection.connect((err) => {
-    if (err) throw err;
-    employee();
+    password: '',
+    database: 'employee_db',
 });
 
 const employee = () => {
@@ -60,7 +53,7 @@ const employee = () => {
         case "UPDATE Employee MANAGER": updateManager();
         break;
 
-        case "EXIT": connection.end();
+        case "EXIT": process.exit();
         break;
     }
 };
@@ -194,3 +187,7 @@ const updateManager = () => {
         employee();
     });
 };
+
+connection.connect((err) => {
+    if (err) throw err;
+});
