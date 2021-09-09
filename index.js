@@ -6,14 +6,13 @@ const connection = mysql.createConnection({
     port: 3306,
     user: 'root',
     password: '',
-    database: 'employee_db',
+    database: 'jedidb',
 });
 
 const employee = () => {
     inquirer.prompt([
         {
             type: "list",
-            name: "options",
             message: "Your options:",
             choices: [
                 "View Employees",
@@ -30,80 +29,184 @@ const employee = () => {
     ])
     .then((res) => {
         switch (res.choice) {
-            case "View Employees": employeeView();
-            break;
+            case "View Employees": {
+                return viewAll();
+            }
 
-            case "View ALL Employees by DEPT": deptView();
-            break;
+            case "View ALL Employees by DEPT": {
+                return deptView();
+            }
 
-            case  "View ALL Employees by MANAGER": managerView();
-            break;
+            case  "View ALL Employees by MANAGER": {
+                return managerView();
+            }
 
-            case "ADD Employee": addEmployee();
-            break;
+            case "ADD Employee": {
+                return addEmployee();
+            }
 
-            case "REMOVE Employee": removeEmployee();
-            break;
+            case "REMOVE Employee": {
+                return removeEmployee();
+            }
 
-            case "UPDATE Employee ROLE": updateEmployee();
-            break;
+            case "UPDATE Employee ROLE": {
+                return updateEmployee();
+            }
 
-            case "UPDATE Employee MANAGER": updateManager();
-            break;
+            case "UPDATE Employee MANAGER": {
+                return updateManager();
+            }
 
-            case "EXIT": process.exit();
+            case "EXIT": {
+                return process.exit();
+            }
         }
     });
 };
 
-const employeeView = (inputs = []) => {
-    inquirer.prompt({
-        name: "employeeView",
-        type: "input",
-        message: "Enter Last Name to begin"
-    })
-    .then((choice) => {
-        let query = "SELECT first_name, last_name, id FROM employee WHERE ?";
-        connection.query(query, { last_name: choice.employeeView}, (err, res) => {
+const viewAll = () => {
+    connection.query(
+        `SELECT 
+            allEmployees.id AS ID,
+            allEmployees.first_name AS First_Name,
+            allEmployees.last_name AS Last_Name,
+            allEmployees.title AS Title,
+            allEmployees.name AS Department,
+            allEmployees.salary AS Salary,
+            allEmployees.manager AS Manager
+        FROM 
+            (SELECT 
+                employee.id, 
+                employee.first_name, 
+                employee.last_name, 
+                role.title, 
+                role.department_id, 
+                departments.name, 
+                role.salary, 
+                employee.manager_id,
+                concat(m.first_name," ", m.last_name) manager
+            FROM employee
+            LEFT JOIN employee m ON m.id = employee.manager_id
+            LEFT JOIN role ON employee.role_id = role.id
+            LEFT JOIN departments ON role.department_id = departments.id)
+        AS allEmployees`,
+        (err, employees) => {
             if (err) throw err;
-
-            for (let i = 0; i < res.length; i++) {
-                console.log(
-                    " First Name: " + res[i].first_name +
-                    " Last Name: " + res[i].last_name +
-                    " ID: " + res[i].id
-                );
-            };
-        });
-        employee();
-    });
-};
-
-const deptView = (res) => {
-    let query = "SELECT dept_name FROM department";
-    connection.query(query, (err, res) => {
-        if (err) throw err;
-        
-        for (let i = 0; i < res.length; i++) {
-            console.log(res[i].name);
+            console.log('VIEWING ALL EMPLOYEES');
+            console.log(employees);
+            employee();
         }
-    });
+    );
 };
 
-const managerView = (res) => {
-    let query = "SELECT mgr_id, first_name, last_name FROM employee WHERE mgr_id IN (SELECT mgr_id FROM employee WHERE mgr_id IS NOT NULL)";
-    connection.query(query, (err, res) => {
+const deptView = () => {
+    connection.query('SELECT * FROM departments', (err, results) => {
         if (err) throw err;
-
-        for (let i = 0; i < res.length; i++) {
-            console.log(
-                res[i].first_name + " " +
-                res[i].last_name + " ID: " +
-                res[i].id
+        inquirer.prompt([
+            {
+                type: "list",
+                message: "Which department would you like to search?",
+                choices() {
+                    const choicesArray = [];
+                    results.forEach((department) => {
+                        choicesArray.push(`${department.name}`);
+                    });
+                    return choicesArray;
+                },
+                name: "choseDept"
+            },
+        ])
+        .then((selection) => {
+            connection.query(
+                `SELECT 
+                    allEmployees.id AS ID,
+                    allEmployees.first_name AS First_Name,
+                    allEmployees.last_name AS Last_Name,
+                    allEmployees.title AS Title,
+                    allEmployees.salary AS Salary,
+                    allEmployees.manager AS Manager
+                FROM 
+                    (SELECT 
+                        employee.id, 
+                        employee.first_name, 
+                        employee.last_name, 
+                        role.title, 
+                        role.department_id, 
+                        departments.name, 
+                        role.salary, 
+                        employee.manager_id,
+                        concat(m.first_name," ", m.last_name) manager
+                    FROM employee
+                    LEFT JOIN employee m ON m.id = employee.manager_id
+                    LEFT JOIN role ON employee.role_id = role.id
+                    LEFT JOIN departments ON role.department_id = departments.id)
+                AS allEmployees
+                WHERE ?`,
+                {name: selection.choseDept},
+                (err, res) => {
+                    if (err) throw err;
+                    console.log("Employees in the ${res.choseDept} department are as follow:");
+                    console.log(res);
+                    employee();
+                } 
             );
-        }
+        });
     });
-    menu();
+};
+
+const managerView = () => {
+    connection.query('SELECT * FROM employee', (err, results) => {
+        if (err) throw err;
+        inquirer.prompt([
+            {
+                type: "list",
+                message: "Which manager would you like to search by?",
+                choices() {
+                    const choicesArray = [];
+                    results.forEach((employee) => {
+                        choicesArray.push(`${employee.first_name} ${employee.last_name}`);
+                    });
+                    return choicesArray;
+                },
+                name: "choseMgr"
+            },
+        ])
+        .then((selection) => {
+            connection.query(
+                `SELECT 
+                    allEmployees.id AS ID,
+                    allEmployees.first_name AS First_Name,
+                    allEmployees.last_name AS Last_Name,
+                    allEmployees.title AS Title,
+                    allEmployees.salary AS Salary,
+                    allEmployees.manager AS Manager
+                FROM 
+                    (SELECT 
+                        employee.id, 
+                        employee.first_name, 
+                        employee.last_name, 
+                        role.title, 
+                        role.department_id, 
+                        departments.name, 
+                        role.salary, 
+                        employee.manager_id,
+                        concat(m.first_name," ", m.last_name) manager
+                    FROM employee
+                    LEFT JOIN employee m ON m.id = employee.manager_id
+                    LEFT JOIN role ON employee.role_id = role.id
+                    LEFT JOIN departments ON role.department_id = departments.id)
+                AS allEmployees
+                WHERE ?`,
+                {Manager: selection.choseMgr},
+                (err, res) => {
+                    if (err) throw err;
+                    console.log("Employees managed by ${selection.choseMgr} are as follow:");
+                    console.log(res);
+                    employee();
+                } 
+            );
+        });
+    });
 };
 
 const addEmployee = () => {

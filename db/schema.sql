@@ -1,45 +1,45 @@
-DROP DATABASE IF EXISTS jediDB;
+DROP DATABASE IF EXISTS jedidb;
 
-CREATE DATABASE jediDB;
+CREATE DATABASE jedidb;
 
-USE jediDB;
+USE jedidb;
 
-CREATE TABLE department
+CREATE TABLE departments
 (
-    id int NOT NULL AUTO_INCREMENT,
-    name varchar(20) NOT NULL,
+    id INT UNSIGNED AUTO_INCREMENT,
+    name varchar(20) UNIQUE NOT NULL,
     PRIMARY KEY (id)
 );
 
 CREATE TABLE role
 (
-    id int NOT NULL AUTO_INCREMENT,
-    title varchar(100) NOT NULL,
-    salary int NOT NULL,
-    dept_id integer(10) NOT NULL,
+    id INT UNSIGNED AUTO_INCREMENT,
+    title varchar(100) UNIQUE NOT NULL,
+    salary INT UNSIGNED NOT NULL,
+    department_id INT(10) UNSIGNED NOT NULL,
     PRIMARY KEY (id),
     INDEX dep_ind (department_id),
-    CONSTRAINT fork_department
+    CONSTRAINT fk_department
         FOREIGN KEY (department_id)
         REFERENCES departments(id)
         ON DELETE CASCADE
 );
 
-CREATE TABLE employee
+CREATE TABLE employee 
 (
-    id int NOT NULL AUTO_INCREMENT,
-    first_name varchar(20) NOT NULL,
-    last_name varchar(20) NOT NULL,
-    role_id INT (20) NULL,
+    id INT UNSIGNED AUTO_INCREMENT,
+    first_name VARCHAR(30) NOT NULL,
+    last_name VARCHAR(30) NOT NULL,
+    role_id INT UNSIGNED NOT NULL,
     INDEX role_ind (role_id),
-    CONSTRAINT fork_role
+    CONSTRAINT fk_role
         FOREIGN KEY (role_id)
         REFERENCES role(id)
         ON DELETE CASCADE,
-    manager_id int NOT NULL,
-    INDEX mgr_ind (manager_id),
-    CONSTRAINT fork_manager
-        FOREIGN KEY (manager_id)REFERENCES employee(id)
+    manager_id INT UNSIGNED,
+    INDEX manager_ind (manager_id),
+    CONSTRAINT fk_manager
+        FOREIGN KEY (manager_id)
         REFERENCES employee(id)
         ON DELETE SET NULL,
     PRIMARY KEY (id)
