@@ -3,7 +3,7 @@ const inquirer = require('inquirer');
 
 const connection = mysql.createConnection({
     host: 'localhost',
-    port: 3006,
+    port: 3306,
     user: 'root',
     password: '',
     database: 'employee_db',
@@ -82,6 +82,8 @@ const employeeView = (inputs = []) => {
 const deptView = (res) => {
     let query = "SELECT dept_name FROM department";
     connection.query(query, (err, res) => {
+        if (err) throw err;
+        
         for (let i = 0; i < res.length; i++) {
             console.log(res[i].name);
         }
@@ -116,7 +118,6 @@ const addEmployee = () => {
         let query = "INSERT INTO employee (first_name, last_name) VALUES ?";
         connection.query(query, [[firstLastName]], (err, res) => {
             if (err) throw err;
-            console.log(err);
         });
         employee();
     });
