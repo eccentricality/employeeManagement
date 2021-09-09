@@ -50,7 +50,7 @@ const employee = () => {
             }
 
             case "UPDATE Employee ROLE": {
-                return updateEmployee();
+                return updateRole();
             }
 
             case "UPDATE Employee MANAGER": {
@@ -326,29 +326,71 @@ const removeEmployee = () => {
     );
 };
 
-const updateEmployee = () => {
-    inquirer.prompt({
-        name: "updateEmployee",
-        type: "input",
-        message: "Enter Employee ID"
-    })
-    .then ((choice) => {
-        let id = choice.id;
+const updateRole = () => {
+    connection.query(
+        `SELECT *
+        FROM employee`,
+        (err, results) => {
+            if (err) throw err;
 
-        inquirer.prompt({
-            name: "roleId",
-            type: "input",
-            message: "Enter Role ID"
-        })
-        .then((choice) => {
-            let employeeId = choice.employeeId;
-            let query = "UPDATE employee SET role_id=? WHERE id=?";
-            connection.query(query, [employeeId, id], (err, res) => {
-                if (err) throw err;
-            });
-        });
-        employee();
-    });
+            inquirer.prompt([
+                {
+                    type: "list",
+                    message: "Which employee's role would you like to update?",
+                    choices() {
+                        const choicesArray = [];
+                        results.forEach(({first_name, last_name}) => {
+                            choicesArray.push(`${first_name} ${last_name}`);
+                        });
+                        return choicesArray;
+                    },
+                    name: "updateEmp"
+                }
+            ])
+            .then((selection) => {
+                let chosenEmp;
+                results.forEach((employee) => {
+                    if (selection.updateEmp === `${employee.first_name} ${employee.last_name}`) {
+                        chosenEmp = employee;
+                    };
+                });
+
+                connection.query(
+                    `SELECT
+                        title AS name,
+                        id AS value
+                    FROM role`,
+                    (err, choices) => {
+                        if (err) throw err;
+
+                        inquirer.prompt([
+                            {
+                                type: "list",
+                                message: "What is the employee's new role?",
+                                choices() {
+                                    return choices
+                                },
+                                name: "updateRole"
+                            }
+                        ])
+                        .then((answer) => {
+                            connection.query(
+                                `UPDATE employee
+                                SET role_id = ${answer.updateRole}
+                                WHERE ?`,
+                                {id: chosenEmp.id},
+                                (err, res) => {
+                                    if (err) throw err;
+                                    console.log("Employee's role updated.");
+                                    employee();
+                                }
+                            )
+                        })
+                    }
+                )
+            })
+        }
+    )
 };
 
 const updateManager = () => {
