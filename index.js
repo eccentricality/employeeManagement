@@ -94,7 +94,7 @@ const viewAll = () => {
         (err, employees) => {
             if (err) throw err;
             console.log('VIEWING ALL EMPLOYEES');
-            console.log(employees);
+            console.table(employees);
             employee();
         }
     );
@@ -146,8 +146,8 @@ const deptView = () => {
                 {name: selection.choseDept},
                 (err, res) => {
                     if (err) throw err;
-                    console.log("Employees in the ${res.choseDept} department are as follow:");
-                    console.log(res);
+                    console.log(`"Employees in the ${selection.choseDept} department are as follow:"`);
+                    console.table(res);
                     employee();
                 } 
             );
@@ -201,8 +201,8 @@ const managerView = () => {
                 {Manager: selection.choseMgr},
                 (err, res) => {
                     if (err) throw err;
-                    console.log("Employees managed by ${selection.choseMgr} are as follow:");
-                    console.log(res);
+                    console.log(`"Employees managed by ${selection.choseMgr} are as follow:"`);
+                    console.table(res);
                     employee();
                 } 
             );
@@ -272,7 +272,7 @@ const addEmployee = () => {
                             selection,
                             (err, results) => {
                                 if (err) throw err;
-                                console.log("Successfully added ${selection.first_name} ${selection.last_name} as an employee!");
+                                console.log(`"Successfully added ${selection.first_name} ${selection.last_name} as an employee!"`);
                                 employee();
                             }
                         );
@@ -318,7 +318,7 @@ const removeEmployee = () => {
                     {id: chosenEmp.id},
                     (err, res) => {
                         if (err) throw err;
-                        console.log("Removed ${selection.removeEmp} from the roster.");
+                        console.log(`"Removed ${selection.removeEmp} from the roster."`);
                         employee();
                     }
                 );
