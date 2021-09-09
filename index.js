@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
+const cTable = require('console.table');
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -394,22 +395,67 @@ const updateRole = () => {
 };
 
 const updateManager = () => {
-    inquirer.prompt({
-        name: "updateManager",
-        type: "input",
-        message: "Which Employee's Manager would you like to update?"
-    })
-    .then(() => {
-        let query = "SELECT manager_id FROM employee WHERE ?";
-        connection.query(query, (err, res) => {
+    connection.query(
+        `SELECT *
+        FROM employee`,
+        (err, results) => {
             if (err) throw err;
 
-            for (let i = 0; i < res.length; i++) {
-                console.log(res[i].employee);
-            };
-        });
-        employee();
-    });
+            inquirer.prompt([
+                {
+                    type: "list",
+                    message: "Which employee's manager would you like to update?",
+                    choices() {
+                        const choicesArray = [];
+                        results.forEach(({first_name, last_name}) => {
+                            choicesArray.push(`${first_name} ${last_name}`);
+                        });
+                        return choicesArray;
+                    },
+                    name: "updateMan"
+                },
+                {
+                    type: "list",
+                    message: "Who is their new manager?",
+                    choices() {
+                        const choicesArray = [];
+                        results.forEach(({first_name, last_name}) => {
+                            choicesArray.push(`${first_name} ${last_name}`);
+                        });
+                        return choicesArray;
+                    },
+                    name: "manUpdated"
+                }
+            ])
+            .then((answer) => {
+                let chosenEmp;
+                results.forEach((employee) => {
+                    if(answer.updateMan === `${employee.first_name} ${employee.last_name}`) {
+                        chosenEmp = employee;
+                    };
+                });
+
+                let chosenMan;
+                results.forEach((employee) => {
+                    if(answer.manUpdated === `${employee.first_name} ${employee.last_name}`) {
+                        chosenMan = employee;
+                    };
+                });
+
+                connection.query(
+                    `UPDATE employee
+                    SET manager_id = ${chosenMan.id}
+                    WHERE ?`,
+                    {id: chosenEmp.id},
+                    (err, res) => {
+                        if (err) throw err;
+                        console.log("Employee's manager has been updated.");
+                        employee();
+                    }
+                );
+            });
+        }
+    );
 };
 
 connection.connect((err) => {
