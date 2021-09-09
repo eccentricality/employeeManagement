@@ -210,40 +210,80 @@ const managerView = () => {
 };
 
 const addEmployee = () => {
-    inquirer.prompt({
-        name: "addEmployee",
-        type: "input",
-        message: "Enter First and Last Name"
-    })
-    .then((response) => {
-        let name = answer.addEmployee;
-        let firstLastName = name.split(" ");
-        let query = "INSERT INTO employee (first_name, last_name) VALUES ?";
-        connection.query(query, [[firstLastName]], (err, res) => {
+    connection.query(
+        `SELECT 
+            title AS name, 
+            id AS value 
+        FROM role`, 
+        (err, choices) => {
             if (err) throw err;
-        });
-        employee();
-    });
+        
+            inquirer.prompt([
+                {
+                    type: "input",
+                    message: "What is the new employee's first name?",
+                    name: "first_name"
+                },
+                {
+                    type: "input",
+                    message: "What is the new employee's last name?",
+                    name: "last_name"
+                },
+                {
+                    type: "list",
+                    message: "What is the new employee's role?",
+                    choices() {
+                        return choices;
+                    },
+                    name: "role_id"
+                }
+            ])
+            .then((selection) => {
+                connection.query('SELECT * FROM employee', (err, results) => {
+                    if (err) throw err;
+
+                    inquirer.prompt([
+                        {
+                            type: "list",
+                            message: "Who is the employee's manager?",
+                            choices() {
+                                const choicesArray = [];
+                                results.forEach(({first_name, last_name}) => {
+                                    choicesArray.push(`${first_name} ${last_name}`);
+                                });
+                                return choicesArray;
+                            },
+                            name: "manager"
+                        }
+                    ])
+                    .then((choice) => {
+                        let chosenMgr;
+                        results.forEach((employee) => {
+                            if(`${employee.first_name} ${employee.last_name}` === choice.manager) {
+                                chosenMgr = employee;
+                            }
+                        });
+                        selection.manager_id = chosenMgr.id;
+
+                        connection.query(
+                            `INSERT INTO employee
+                            SET ?`,
+                            selection,
+                            (err, results) => {
+                                if (err) throw err;
+                                console.log("Successfully added ${selection.first_name} ${selection.last_name} as an employee!");
+                                employee();
+                            }
+                        );
+                    });
+                });
+            });
+        }
+    );
 };
 
 const removeEmployee = () => {
-    inquirer.prompt({
-        name: "removeEmployee",
-        type: "input",
-        message: "Which Employee would you like to remove?"
-    })
-    .then(() => {
-        let query = "DELETE FROM employee WHERE ?";
-        let deleteId = Number(choice.removeEmployee);
-        connection.query(query, { id: deleteId }, (err, res) => {
-            if (err) throw err;
-            for (let i = 0; i < res.length; i++) {
-                console.log(res[i].removeEmployee);
-            }
 
-        });
-        employee();
-    });
 };
 
 const updateEmployee = () => {
