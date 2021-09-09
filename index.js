@@ -283,7 +283,47 @@ const addEmployee = () => {
 };
 
 const removeEmployee = () => {
+    connection.query(
+        `SELECT *
+        FROM employee`,
+        (err, results) => {
+            if (err) throw err;
 
+            inquirer.prompt([
+                {
+                    type: "list",
+                    message: "Which employee would you like to remove?",
+                    choices() {
+                        const choicesArray = [];
+                        results.forEach(({first_name, last_name}) => {
+                            choicesArray.push(`${first_name} ${last_name}`);
+                        });
+                        return choicesArray;
+                    },
+                    name: "removeEmp"
+                }
+            ])
+            .then((selection) => {
+                let chosenEmp;
+                results.forEach((employee) => {
+                    if(selection.removeEmp === `${employee.first_name} ${employee.last_name}`) {
+                        chosenEmp = employee;
+                    };
+                });
+
+                connection.query(
+                    `DELETE FROM employee
+                    WHERE ?`,
+                    {id: chosenEmp.id},
+                    (err, res) => {
+                        if (err) throw err;
+                        console.log("Removed ${selection.removeEmp} from the roster.");
+                        employee();
+                    }
+                );
+            });
+        }
+    );
 };
 
 const updateEmployee = () => {
